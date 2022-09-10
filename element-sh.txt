@@ -1,0 +1,74 @@
+#!/bin/bash
+
+PSQL="psql -X --username=freecodecamp --dbname=periodic_table --tuples-only -c"
+MAIN_MENU()
+{
+  ELEMENT=$1
+  if [[ $ELEMENT ]]
+  then
+    if [[ $ELEMENT =~ ^[0-9]+$ ]]
+    then
+      #call function atomic number
+      ATOMIC_NUMBER $ELEMENT
+
+    else 
+      #call function symbol_name
+      SYMBOL_NAME $ELEMENT
+      
+    fi
+  else
+    echo "Please provide an element as an argument."
+  fi
+}
+
+ATOMIC_NUMBER()
+{
+  #display details based on atomic number
+  
+  ELEMENT_DETAILS=$($PSQL "select e.name,e.symbol,t.type,p.atomic_mass,p.melting_point_celsius,p.boiling_point_celsius from elements e inner join properties p on e.atomic_number=p.atomic_number inner join types t on p.type_id=t.type_id where e.atomic_number=$1")
+  echo $ELEMENT_DETAILS | while read ATOMIC_NAME BAR SYMBOL BAR TYPE BAR MASS BAR MELTINGP BAR BOILINGP
+  do
+    if [[ -z $ATOMIC_NAME ]]
+    then
+        echo "I could not find that element in the database."
+    else
+       #ATOMIC_NAME=`echo $ATOMIC_NAME | sed 's/ *$//g'`
+       #SYMBOL=`echo $SYMBOL | sed 's/ *$//g'`
+       #TYPE=`echo $TYPE | sed 's/ *$//g'`
+       #echo "fetching details, please wait"
+        echo "The element with atomic number $1 is $ATOMIC_NAME ($SYMBOL). It's a $TYPE, with a mass of $MASS amu. $ATOMIC_NAME has a melting point of $MELTINGP celsius and a boiling point of $BOILINGP celsius."
+    fi
+  done
+  
+
+}
+
+SYMBOL_NAME()
+{
+  #display details based on symbol or name
+  
+  #SYM_NAME=$1
+  #echo "The length of the argument is ${#SYM_NAME}"
+  #if [[ ${#SYM_NAME} <=2 ]]
+  #then
+     #echo "Selection based on Symbol"
+  #else
+     #echo "Selection based on Name"
+  #fi
+  #instead of taking the above path, submit a query with the where condition name or symbol
+  ELEMENT_DETAILS=$($PSQL "select e.atomic_number,e.name,e.symbol,t.type,p.atomic_mass,p.melting_point_celsius,p.boiling_point_celsius from elements e inner join properties p on e.atomic_number=p.atomic_number inner join types t on p.type_id=t.type_id where e.symbol='$1' or e.name='$1'")
+  echo $ELEMENT_DETAILS | while read ATOMIC_NUMBER BAR ATOMIC_NAME BAR SYMBOL BAR TYPE BAR MASS BAR MELTINGP BAR BOILINGP
+  do
+    if [[ -z $ATOMIC_NAME ]]
+    then
+        echo "I could not find that element in the database."
+    else
+       #ATOMIC_NAME=`echo $ATOMIC_NAME | sed 's/ *$//g'`
+       #SYMBOL=`echo $SYMBOL | sed 's/ *$//g'`
+       #TYPE=`echo $TYPE | sed 's/ *$//g'`
+        echo "The element with atomic number $ATOMIC_NUMBER is $ATOMIC_NAME ($SYMBOL). It's a $TYPE, with a mass of $MASS amu. $ATOMIC_NAME has a melting point of $MELTINGP celsius and a boiling point of $BOILINGP celsius."
+    fi
+  done
+}
+
+MAIN_MENU $1

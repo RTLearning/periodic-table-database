@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#the purpose of the file is to run the queries to satisfy the following requirements
+#You should delete the non existent element, whose atomic_number is 1000, from the two tables
+#Your properties table should not have a type column
+
+PSQL="psql -X --username=freecodecamp --dbname=periodic_table --tuples-only -c"
+
+DELETE_ROW=$($PSQL "delete from properties where atomic_number=1000")
+
+DELETE_ROW=$($PSQL "delete from elements where atomic_number=1000")
+
+DELETE_COLUMN=$($PSQL "alter table properties drop column type")
+
+echo "Changes made in the tables"
